@@ -1,5 +1,11 @@
 # Práctica 6: Índices y optimización de las BD
 
+## Autores
+
+Airam Rafael Luque León (alu0101335148@ull.edu.es)
+
+Andrés Pérez Castellano (alu0101313511@ull.edu.es)
+
 ## Tareas
 
 ### 1. Restauración de la base de datos postgres_air. 
