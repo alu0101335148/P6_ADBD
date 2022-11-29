@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="ER-Hettie">
+	<entities>
+		<data-source id="postgres-jdbc-184c4a2f62d-2f8ce9d25d37711d">
+			<entity id="1" name="account" fq-name="postgres_air.account">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="2" name="aircraft" fq-name="postgres_air.aircraft">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="3" name="airport" fq-name="postgres_air.airport">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="4" name="boarding_pass" fq-name="postgres_air.boarding_pass">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="5" name="booking" fq-name="postgres_air.booking">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="6" name="booking_leg" fq-name="postgres_air.booking_leg">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="7" name="flight" fq-name="postgres_air.flight">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="8" name="frequent_flyer" fq-name="postgres_air.frequent_flyer">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="9" name="passenger" fq-name="postgres_air.passenger">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+			<entity id="10" name="phone" fq-name="postgres_air.phone">
+				<path name="postgres_air"/>
+				<path name="hettie"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="booking_account_id_fk" fq-name="postgres_air.booking.booking_account_id_fk" type="fk" pk-ref="1" fk-ref="5"/>
+		<relation name="pass_account_id_fk" fq-name="postgres_air.passenger.pass_account_id_fk" type="fk" pk-ref="1" fk-ref="9"/>
+		<relation name="pass_frequent_flyer_id_fk" fq-name="postgres_air.passenger.pass_frequent_flyer_id_fk" type="fk" pk-ref="1" fk-ref="9"/>
+		<relation name="phone_account_id_fk" fq-name="postgres_air.phone.phone_account_id_fk" type="fk" pk-ref="1" fk-ref="10"/>
+		<relation name="aircraft_code_fk" fq-name="postgres_air.flight.aircraft_code_fk" type="fk" pk-ref="2" fk-ref="7"/>
+		<relation name="arrival_airport_fk" fq-name="postgres_air.flight.arrival_airport_fk" type="fk" pk-ref="3" fk-ref="7"/>
+		<relation name="departure_airport_fk" fq-name="postgres_air.flight.departure_airport_fk" type="fk" pk-ref="3" fk-ref="7"/>
+		<relation name="booking_id_fk" fq-name="postgres_air.booking_leg.booking_id_fk" type="fk" pk-ref="5" fk-ref="6"/>
+		<relation name="pass_booking_id_fk" fq-name="postgres_air.passenger.pass_booking_id_fk" type="fk" pk-ref="5" fk-ref="9"/>
+		<relation name="booking_leg_id_fk" fq-name="postgres_air.boarding_pass.booking_leg_id_fk" type="fk" pk-ref="6" fk-ref="4"/>
+		<relation name="flight_id_fk" fq-name="postgres_air.booking_leg.flight_id_fk" type="fk" pk-ref="7" fk-ref="6"/>
+		<relation name="frequent_flyer_id_fk" fq-name="postgres_air.account.frequent_flyer_id_fk" type="fk" pk-ref="8" fk-ref="1"/>
+		<relation name="passenger_id_fk" fq-name="postgres_air.boarding_pass.passenger_id_fk" type="fk" pk-ref="9" fk-ref="4"/>
+	</relations>
+</diagram>
