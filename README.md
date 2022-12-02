@@ -18,7 +18,7 @@ CREATE DATABASE hettie;
 
 Una vez creada, se restaura la información de la base de datos
 
-```sql
+```bash
 pg_restore -x --no-owner -U postgres -d hettie /home/usuario/postgres_air.backup;
 ```
 
@@ -172,7 +172,7 @@ Execution Time: 51.592 ms                                                       
 
 #### b) Compare los resultados con los obtenidos en la anterior interrogante.
 
-Las consultas que estamos comparando son bastante parecidass, pero los planes 
+Las consultas que estamos comparando son bastante parecidas, pero los planes 
 difieren un poco, en el plan. En parte, esto puede estar relacionado con el
 hecho de que en Estados Unidos hay más aeropuertos que en la República Checa.
 
@@ -221,36 +221,70 @@ WHERE scheduled_arrival:: date='2020-10-14';
 
 #### a) Construya índices para con los algoritmos que sean válidos para A y B.
 
+Se construyen varios índices para el atributo `scheduled_arrival`, puesto que
+está implicado en el filtro de la cláusula `WHERE`.
 
+Se utilizan algoritmos que permitan trabajar con operadores de comparación booleanos:
+- `btree`
+- `hash`
+- `brin`
+
+```sql
+CREATE INDEX scheduled_arrival_idx ON flight USING btree (scheduled_arrival);
+-- Benchmarks
+DROP INDEX scheduled_arrival_idx;
+
+CREATE INDEX scheduled_arrival_idx ON flight USING hash (scheduled_arrival);
+-- Benchmarks
+DROP INDEX scheduled_arrival_idx;
+
+CREATE INDEX scheduled_arrival_idx ON flight USING brin (scheduled_arrival);
+-- Benchmarks
+DROP INDEX scheduled_arrival_idx;
+```
 
 #### b) Evalué el rendimiento (tiempo) que se obtuvieron con lo nuevos índices al realizar las consultas. Construya una tabla con los resultados.
 
-Consulta A:
-```
-```
-
-Consulta B:
-```
-```
-
 Tabla de resultados:
 
-```
-| Consulta | Coste total de la consulta | Nº Filas totales | Nº Filas estimada
-|----------|----------------------------|------------------|-------------------
+| Consulta | Algoritmo | Coste total de la consulta | Nº Filas totales | Nº Filas estimada | T. planificación (ms) | T. ejecución (ms) |
+|----------|-----------|----------------------------|------------------|-------------------| ---------------- | ------------ |
+| A | ninguno | 14234.35 | 4516 | 3975 | 0.659 | 68.129 |
+| B | ninguno | 14178.45 | 4502 | 3416 | 0.141 | 90.957 |
+| A | btree | 7111.17 | 4516 | 3975 | 0.732 | 27.490 |
+| B | btree | 14178.45 | 4502 | 3416 | 0.135 | 97.208 |
+| A | hash | 14234.35 | 4516 | 3975 | 1.360 | 69.886 |
+| B | hash | 14178.45 | 4502 | 3416 | 0.175 | 79.025 |
+| A | brin | 8867.32 | 4516 | 3975 | 0.240 | 116.627 |
+| B | brin | 14178.45 | 4502 | 3416 | 0.184 | 76.040 |
 
-```
+> Nota: cabe destacar que la consulta B en su versión sin `::date`, obtiene el mejor rendimiento con 0.232 ms (hash) y 0.534 ms (btree).
 
-`ToDo: cambiar si B es mejor`
-La consulta A ofrece mejor desempeño:
+Cuando no utilizamos índices, el planificador opta por una estrategia `Parallel Seq Scan`
+(2 procesos). Dado que se trata de una búsqueda secuencial, el sistema debe realizar
+todas las comprobaciones posibles. Según la intuición, un filtro más restrictivo
+como el de B, será propenso a generar más filas que A, aunque por las pruebas
+realizadas, parece que la operación *type casting* al tipo *date* está
+penalizando a la consulta B.
+
+El algoritmo `btree` acelera considerablemente la ejecución de A. Es una
+estructura de datos muy eficiente para la búsqueda de valores dentro de un
+rango, como es el caso del operador `BETWEEN`. Curiosamente, el planificador
+decide ignorar el índice para la consulta B.
+
+Por las propias características del algoritmo `hash`, solamente pueden sacarle
+partido aquellos filtros de comparación de igualdad, para un único valor del
+atributo. Este no es caso de la consulta A y por tanto el planificador elige
+otro tipo de plan.
+
+El índice `brin` no parece estar optimizado para el tipo de dato que utiliza el
+atributo `scheduled_arrival`.
+
+En general, la consulta A ofrece mejor desempeño (btree), creamos una vista para ella:
 
 ```sql
-CREATE VIEW postgres_air.vuelos_dia_10 AS
-SELECT flight_id
-,departure_airport
-,arrival_airport
+CREATE VIEW vuelos_dias_14_15 AS
+SELECT flight_id, departure_airport, arrival_airport
 FROM flight
-WHERE scheduled_arrival BETWEEN
-'2020-10-14' AND '2020-10-15';
+WHERE scheduled_arrival BETWEEN '2020-10-14' AND '2020-10-15';
 ```
-
