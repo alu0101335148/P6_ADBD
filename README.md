@@ -65,7 +65,7 @@ Las tablas principales son las siguientes:
 
 Para esta tarea utilizaremos DBeaver, que nos permite generar el diagrama de forma automática.
 
-![Diagrama Entidad-Relación](/img/ER_Diagram.png)
+![Diagrama Entidad-Relación](img/ER_Diagram.png)
 
 ### 5. Realizar la siguiente consulta:
 
@@ -81,20 +81,7 @@ AND iso_country='US'
 
 Al usar este comando, se obtiene la siguiente información:
 
-```
-QUERY PLAN                                                                                                             |
------------------------------------------------------------------------------------------------------------------------+
-Hash Join  (cost=20.09..17229.60 rows=144636 width=12) (actual time=0.485..378.781 rows=338858 loops=1)                |
-  Hash Cond: (f.departure_airport = a.airport_code)                                                                    |
-  ->  Seq Scan on flight f  (cost=0.00..15404.76 rows=683176 width=16) (actual time=0.045..197.186 rows=683176 loops=1)|
-  ->  Hash  (cost=18.33..18.33 rows=141 width=4) (actual time=0.401..0.402 rows=141 loops=1)                           |
-        Buckets: 1024  Batches: 1  Memory Usage: 13kB                                                                  |
-        ->  Seq Scan on airport a  (cost=0.00..18.33 rows=141 width=4) (actual time=0.040..0.307 rows=141 loops=1)     |
-              Filter: (iso_country = 'US'::text)                                                                       |
-              Rows Removed by Filter: 525                                                                              |
-Planning Time: 0.663 ms                                                                                                |
-Execution Time: 395.120 ms                                                                                             |
-```
+![5a](img/5a.png)
 
 #### b) Lea el resultado del plan y determine el costo total de la consulta, el costo de configuración, la cantidad de filas que se devolverán y cantidad de filas estimadas.
 
@@ -108,19 +95,7 @@ Cantidad de filas estimadas: 144636
 
 #### c) Repita la consulta del paso (b) de esta actividad, esta vez limitando el número de registros devueltos a 15.
 
-```
-QUERY PLAN                                                                                                                                                |
-----------------------------------------------------------------------------------------------------------------------------------------------------------+
-Limit  (cost=0.70..6.43 rows=15 width=12) (actual time=4.226..4.263 rows=15 loops=1)                                                                      |
-  ->  Merge Join  (cost=0.70..55254.44 rows=144636 width=12) (actual time=4.224..4.259 rows=15 loops=1)                                                   |
-        Merge Cond: (f.departure_airport = a.airport_code)                                                                                                |
-        ->  Index Scan using flight_departure_airport on flight f  (cost=0.42..52031.86 rows=683176 width=16) (actual time=0.028..3.607 rows=2433 loops=1)|
-        ->  Index Scan using airport_pkey on airport a  (cost=0.28..67.93 rows=141 width=4) (actual time=0.055..0.055 rows=1 loops=1)                     |
-              Filter: (iso_country = 'US'::text)                                                                                                          |
-              Rows Removed by Filter: 4                                                                                                                   |
-Planning Time: 1.060 ms                                                                                                                                   |
-Execution Time: 4.364 ms                                                                                                                                  |
-```
+![5c](img/5c.png)
 
 #### d) Revise el plan de consulta actualizado y compare su resultado con el resultado del paso anterior, prestando especial atención a cuántos pasos están involucrados en el plan de consulta y cuál es el costo del paso limitante.
 
@@ -154,21 +129,7 @@ AND iso_country='CZ'
 
 #### a) Utilice el comando EXPLAIN para obtener el plan de consulta.
 
-```
-QUERY PLAN                                                                                                                                    |
-----------------------------------------------------------------------------------------------------------------------------------------------+
-Nested Loop  (cost=20.40..2965.52 rows=1026 width=12) (actual time=25.398..51.237 rows=1066 loops=1)                                          |
-  ->  Seq Scan on airport a  (cost=0.00..18.33 rows=1 width=4) (actual time=0.241..0.361 rows=1 loops=1)                                      |
-        Filter: (iso_country = 'CZ'::text)                                                                                                    |
-        Rows Removed by Filter: 665                                                                                                           |
-  ->  Bitmap Heap Scan on flight f  (cost=20.40..2936.91 rows=1029 width=16) (actual time=25.140..50.208 rows=1066 loops=1)                   |
-        Recheck Cond: (departure_airport = a.airport_code)                                                                                    |
-        Heap Blocks: exact=802                                                                                                                |
-        ->  Bitmap Index Scan on flight_departure_airport  (cost=0.00..20.14 rows=1029 width=0) (actual time=25.005..25.005 rows=1066 loops=1)|
-              Index Cond: (departure_airport = a.airport_code)                                                                                |
-Planning Time: 1.242 ms                                                                                                                       |
-Execution Time: 51.592 ms                                                                                                                     |
-```
+![6a](img/6a.png)
 
 #### b) Compare los resultados con los obtenidos en la anterior interrogante.
 
@@ -176,20 +137,7 @@ Las consultas que estamos comparando son bastante parecidas, pero los planes
 difieren un poco, en el plan. En parte, esto puede estar relacionado con el
 hecho de que en Estados Unidos hay más aeropuertos que en la República Checa.
 
-```
-hettie=# SELECT COUNT(*) FROM airport WHERE iso_country = 'US';
- count 
--------
-   141
-(1 row)
-
-hettie=# SELECT COUNT(*) FROM airport WHERE iso_country = 'CZ';
- count 
--------
-     1
-(1 row)
-```
-
+![6b](img/6b.png)
 
 #### c) Explique la diferencia de rendimiento.
 
